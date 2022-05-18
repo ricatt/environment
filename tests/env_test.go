@@ -62,3 +62,13 @@ func TestInvalidTypeEnvStruct(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "env: type \"interface\" not supported", err.Error())
 }
+
+func TestInvalidPath(t *testing.T) {
+	var (
+		env EnvInvalidType
+		err error
+	)
+	err = environment.LoadFile(".env-invalid-path", &env, environment.Config{})
+	assert.Error(t, err)
+	assert.Equal(t, "open .env-invalid-path: no such file or directory", err.Error())
+}

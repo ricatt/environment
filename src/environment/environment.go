@@ -1,18 +1,19 @@
 package environment
 
 import (
+	"bufio"
 	"fmt"
-	"github.com/joho/godotenv"
+	"os"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 const tagName = "env"
 
-var content map[string]string
-
 func LoadFile[T any](path string, target *T, config Config) (err error) {
-	content, err = godotenv.Read(path)
+	var content map[string]string
+	content, err = parseEnvFile(path)
 	if err != nil {
 		return err
 	}
@@ -43,4 +44,23 @@ func LoadFile[T any](path string, target *T, config Config) (err error) {
 		}
 	}
 	return
+}
+
+func parseEnvFile(path string) (content map[string]string, err error) {
+	var file *os.File
+	file, err = os.Open(path)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.Split(scanner.Text(), "=")
+		var val string
+		if len(line) == 2 {
+			val = line[1]
+		}
+		content[line[0]] = val
+	}
+	return nil, scanner.Err()
 }
