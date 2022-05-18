@@ -18,6 +18,10 @@ type EnvOptional struct {
 	BaseURL     string `env:"BASE_URL"`
 }
 
+type EnvInvalidType struct {
+	InvalidType any `env:"INVALID_TYPE"`
+}
+
 func TestAddValue(t *testing.T) {
 	var env Env
 	err := environment.LoadFile(".env", &env, environment.Config{})
@@ -47,4 +51,14 @@ func TestOptionalEnvStruct(t *testing.T) {
 	assert.Nil(t, err)
 	err = environment.LoadFile(".env", &envOptional, environment.Config{})
 	assert.Nil(t, err)
+}
+
+func TestInvalidTypeEnvStruct(t *testing.T) {
+	var (
+		env EnvInvalidType
+		err error
+	)
+	err = environment.LoadFile(".env", &env, environment.Config{})
+	assert.Error(t, err)
+	assert.Equal(t, "env: type \"interface\" not supported", err.Error())
 }

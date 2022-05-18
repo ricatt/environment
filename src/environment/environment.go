@@ -22,15 +22,20 @@ func LoadFile[T any](path string, target *T, config Config) (err error) {
 	for i := 0; i < proxy.NumField(); i++ {
 		field := proxy.Type().Field(i)
 		tag := field.Tag.Get(tagName)
-
-		if v, err := strconv.ParseBool(content[tag]); err == nil {
+		switch field.Type.Kind() {
+		case reflect.Bool:
+			v, _ := strconv.ParseBool(content[tag])
 			tp.Elem().FieldByName(field.Name).SetBool(v)
-		} else if v, err := strconv.ParseInt(content[tag], 10, 0); err == nil {
+		case reflect.Int:
+			v, _ := strconv.ParseInt(content[tag], 10, 0)
 			tp.Elem().FieldByName(field.Name).SetInt(v)
-		} else if v, err := strconv.ParseFloat(content[tag], 0); err == nil {
+		case reflect.Float64, reflect.Float32:
+			v, _ := strconv.ParseFloat(content[tag], 0)
 			tp.Elem().FieldByName(field.Name).SetFloat(v)
-		} else if content[tag] != "" {
+		case reflect.String:
 			tp.Elem().FieldByName(field.Name).SetString(content[tag])
+		default:
+			return fmt.Errorf("env: type \"%s\" not supported", field.Type.Kind())
 		}
 
 		if content[tag] == "" && config.Force {
